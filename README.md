@@ -16,4 +16,4 @@ py ./main.py
 ```
 
 # WORK IN PROGRESS
-* automatic minecraft and forge version getter
+* managing existing servers (run, kill, save etc.)
