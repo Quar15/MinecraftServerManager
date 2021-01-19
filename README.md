@@ -14,3 +14,6 @@ To run Minecraft Server Manager use:
 ```
 py ./app.py
 ```
+
+# WORK IN PROGRESS
+* automatic minecraft and forge version getter
