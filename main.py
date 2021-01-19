@@ -3,17 +3,17 @@ import os
 import json
 import urllib3
 import shutil
+import webscraper as ws
+
+FORGE_LINKS, MC_VERSIONS = ws.get_versions()
 
 class Server:
     def __init__(self, name, mc_version=None, ram_to_use="4"):
         self.name = name
-        if mc_version == None:
-            self.mc_ver = self.check_latest_mc_version()
-        else:
-            self.mc_ver = mc_version
+        self.mc_ver = mc_version
         self.forge_ver = self.check_forge_version()
         self.ram_to_use = ram_to_use
-        self.manager_file = "MinecraftServerManager" + self.mc_ver + ".json"
+        self.manager_file = "MinecraftServerManager" + self.name + ".json"
 
 
     def __repr__(self):
@@ -35,18 +35,29 @@ class Server:
             if not os.path.isdir(server_files_folder_path):
                 os.mkdir(server_files_folder_path)
             else:
-                raise Exception("Server name already exists")
+                raise Exception("@ERROR: Server name already exists")
 
             self.download_server_files()
             self.edit_config("Message of the Day")
 
 
     def initialize_server(self):
-        print("@INFO: Server is running")
+        try:
+            server_file_path = "forge-{forge_ver}.jar".format(forge_ver=self.forge_ver)
+            run_server_cmd = "java -Xmx8G -Xms1G -jar {server_file} nogui".format(server_file = server_file_path)
+            os.mkdir("mods")
+            wait_for_mods_txt = ">> Waiting to add mods in {path} [Enter]: ".format(path=os.path.dirname(os.path.abspath(server_file_path)))
+            input(wait_for_mods_txt)
+            print("@INFO: Server is running")
+            os.system(run_server_cmd)
+        except:
+            print("@WARNING: Failed to run", server_file_path)
 
 
     def check_forge_version(self):
-        return "1.16.4-35.1.37"
+        print("@INFO: Looking for forge version")
+        forge_ver = ws.get_forge_version_from_url(ws.get_forge_link(self.mc_ver, FORGE_LINKS))
+        return forge_ver
 
 
     def download_forge(self, force=False):
@@ -63,11 +74,6 @@ class Server:
                 print("URL:", url)
                 return False
             return True
-
-
-    def check_latest_mc_version(self):
-        # @TODO: find most recent Minecraft version
-        return "1.16.4"
 
 
     def check_if_server_exists(self):
@@ -95,13 +101,18 @@ class Server:
     def install_server_files(self):
         if self.forge_ver != None:
             forge_file_path = "./data/forge_installers/" + self.forge_ver + ".jar"
-            server_file_path = "./data/servers/" + self.name + "/" + self.forge_ver + ".jar"
+            server_installer_file = self.forge_ver + ".jar"
+            server_file_path = "./data/servers/" + self.name + "/" + server_installer_file
             shutil.copy(forge_file_path, server_file_path)
             install_forge_cmd = "java -jar " + self.forge_ver + ".jar" + " --installServer"
             os.chdir("./data/servers/" + self.name)
             os.system(install_forge_cmd)
-            os.chdir("...")
-        return True
+
+            print("@INFO: Deleting installation files")
+            os.remove(server_installer_file)
+            os.remove(server_installer_file + ".log")
+            return True
+        return False
 
 
     def edit_config(self, motd, online_mode="false", difficulty="hard"):
@@ -122,15 +133,41 @@ def convert_to_mb(bytes):
     return bytes//1024
 
 
-def main():
+def input_mc_version():
+    
+    while True:
+        mc_version_txt = input(">> Select Minecraft Version (leave empty to use latest): ")
+        
+        mc_ver = None
+        if mc_version_txt in MC_VERSIONS:
+            mc_ver = mc_version_txt
+        else:
+            print("@ERROR: Minecraft", mc_version_txt, "not found")
+            mc_version_txt = MC_VERSIONS[0]
+            mc_ver = mc_version_txt
+        print("@INFO: Minecraft", mc_version_txt, "selected.")
+        confirm_text = input(">> Install? [Y/n]: ")
+        if confirm_text.lower() == "y" or confirm_text == "":
+            break
+
+    return mc_ver
+
+def initialize_app():
+
+    try:
+        os.mkdir("./data")
+        os.mkdir("./data/forge_installers")
+        os.mkdir("./data/servers")
+    except OSError:
+        pass
+
     print("@INFO: Minecraft Server Manager initialized")
 
-    mc_version_txt = input(">> Select Minecraft Version (leave empty to use latest): ")
-    if mc_version_txt:
-        # @TODO: add checking formatting
-        mc_ver = mc_version_txt
-    else:
-        mc_ver = None
+
+def main():
+    initialize_app()
+
+    mc_ver = input_mc_version()
 
     serv_name = ""
     while len(serv_name) < 1:
