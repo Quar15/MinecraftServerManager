@@ -12,7 +12,7 @@ python --version
 ```
 To run Minecraft Server Manager use:
 ```
-py ./app.py
+py ./main.py
 ```
 
 # WORK IN PROGRESS
