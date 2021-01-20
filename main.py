@@ -120,7 +120,7 @@ class Server:
         with open(server_config_files_path + "eula.txt", "w+") as f:
             f.write("eula=true")
         with open(server_config_files_path + "server.properties", "w+") as f:
-            properties_txt = "motd=" + motd + "\nonline_mode=" + online_mode + "\ndifficulty=" + difficulty
+            properties_txt = "motd=" + motd + "\nonline-mode=" + online_mode + "\ndifficulty=" + difficulty
             f.write(properties_txt)
         print("@INFO: Server configuration finished")
 
