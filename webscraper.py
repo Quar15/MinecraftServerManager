@@ -55,3 +55,6 @@ def get_forge_link(mc_ver, forge_links):
 
     print("@ERROR: Forge link not found")
     return None
+
+if __name__ == "__main__":
+    print("@INFO: Run main.py to use Minecraft Server Manager")
