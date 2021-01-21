@@ -24,4 +24,4 @@ py ./main.py
 
 # WORK IN PROGRESS
 * managing existing servers (run, kill, save etc.)
-* basic install (python and modules)
+* basic install script (python and modules)
